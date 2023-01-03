@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react'
-import Button from '@mui/material/Button';
+import React, { ChangeEvent, useEffect, useRef, useState } from "react"
+import Button from "@mui/material/Button";
 
-import { useAppSelector, useAppDispatch } from '../hooks'
-import { chatSliceActions, getMessages } from './chatSlice'
-import { Box, Container } from '@mui/system';
-import { AppBar, IconButton, Menu, MenuItem, Paper, TextField, Toolbar, Typography } from '@mui/material';
-import SendIcon from '@mui/icons-material/Send';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useAppSelector, useAppDispatch } from "../hooks"
+import { chatSliceActions, getMessages } from "./chatSlice"
+import { Box, Container } from "@mui/system";
+import { AppBar, IconButton, Menu, MenuItem, Paper, TextField, Toolbar, Typography } from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 
 const ChatRoom: React.FC = () => {
     const messages = useAppSelector(getMessages)
     const dispatch = useAppDispatch()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [inputMessage, setInputMessage] = useState<String>("");
+    const messagesEndRef = useRef<null | HTMLDivElement>(null); 
 
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -20,11 +22,28 @@ const ChatRoom: React.FC = () => {
 
     const handleClose = () => {
         setAnchorEl(null);
-      };
+    };
 
-    // useEffect(() => {
-    //     dispatch(chatSliceActions.initConnection());
-    // }, [dispatch]);
+    const handleChange = (msg: String) => {
+        setInputMessage(msg);
+    }
+
+    const handleSend = () => {
+        dispatch(chatSliceActions.sendMessage(inputMessage));
+        setInputMessage("");
+    };
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        dispatch(chatSliceActions.initConnection());
+    }, [dispatch]);
+
+    useEffect(() => {
+        scrollToBottom();
+      }, [messages]);
 
     return (
         <div>
@@ -54,17 +73,17 @@ const ChatRoom: React.FC = () => {
                         <AccountCircle />
                     </IconButton>
                     <Menu
-                        sx={{ mt: '40px' }}
+                        sx={{ mt: "40px" }}
                         id="menu-appbar"
                         anchorEl={anchorEl}
                         anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
+                            vertical: "top",
+                            horizontal: "right",
                         }}
                         keepMounted
                         transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
+                            vertical: "top",
+                            horizontal: "right",
                         }}
                         open={Boolean(anchorEl)}
                         onClose={handleClose}
@@ -77,104 +96,110 @@ const ChatRoom: React.FC = () => {
             <Container maxWidth="md">
                 <Box sx={{
                     mt: 2,
-                    width: '100%',
+                    width: "100%",
                     height: 800,
-                    border: '1px solid black',
-                    borderRadius: '10px',
-                    // backgroundColor: '#F1F1F1',
+                    border: "1px solid black",
+                    borderRadius: "10px",
+                    // backgroundColor: "#F1F1F1",
                     maxHeight: 800,
-                    overflow: 'auto'
+                    overflow: "auto"
                 }}>
-                    <div>
+                    {messages.map((m) => (
+                        <div key={m.createdAt}>
+                            <Box
+                                sx={{
+                                    p: "5px",
+                                    m: "5px",
+                                    border: "1px solid black",
+                                    width: 250,
+                                    backgroundColor: "#33F6FF",
+                                    ...(m.userId === "EvanSia" && {
+                                        backgroundColor: "white",
+                                        ml: "auto"
+                                    })
+                                }}
+                            >
+                                <Typography
+                                    variant="caption"
+                                    display="block"
+                                    sx={{ color: "gray" }}
+                                >
+                                    {m.userId} | {m.createdAt}
+                                </Typography>
+                                <Typography variant="body2" display="block">
+                                    {m.text}
+                                </Typography>
+                            </Box>
+                        </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                    {/* <div>
                         <Box
                             sx={{
-                                p: '5px',
-                                m: '5px',
-                                border: '1px solid black',
+                                p: "5px",
+                                m: "5px",
+                                border: "1px solid black",
                                 width: 250,
-                                backgroundColor: '#33F6FF'
+                                backgroundColor: "#33F6FF"
                             }}
                         >
                             <Typography
                                 variant="caption"
                                 display="block"
-                                sx={{ color: 'gray' }}
+                                sx={{ color: "gray" }}
                             >
                                 Sia
                             </Typography>
                             <Typography variant="body2" display="block">
-                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
+                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry"s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
                             </Typography>
                         </Box>
                     </div>
                     <div>
                         <Box
                             sx={{
-                                p: '5px',
-                                m: '5px',
-                                border: '1px solid black',
+                                p: "5px",
+                                m: "5px",
+                                border: "1px solid black",
                                 width: 250,
-                                backgroundColor: 'white',
-                                ml: 'auto'
+                                backgroundColor: "white",
+                                ml: "auto"
                             }}
                         >
                             <Typography
                                 variant="caption"
                                 display="block"
-                                sx={{ color: 'gray' }}
+                                sx={{ color: "gray" }}
                             >
                                 Evan
                             </Typography>
                             <Typography variant="body2" display="block">
-                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
+                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry"s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
                             </Typography>
                         </Box>
-                    </div>
-                    <div>
-                        <Box
-                            sx={{
-                                p: '5px',
-                                m: '5px',
-                                border: '1px solid black',
-                                width: 250,
-                                backgroundColor: 'white',
-                                ml: 'auto'
-                            }}
-                        >
-                            <Typography
-                                variant="caption"
-                                display="block"
-                                sx={{ color: 'gray' }}
-                            >
-                                Evan
-                            </Typography>
-                            <Typography variant="body2" display="block">
-                                Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book
-                            </Typography>
-                        </Box>
-                    </div>
+                    </div> */}
                 </Box>
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 2, mb: 2 }}>
                     <TextField 
                         sx={{
-                            width: '100%',
+                            width: "100%",
                         }}
                         inputProps={{
                             maxLength: 250,
                           }}
                         InputProps={{
                             endAdornment: (
-                                <IconButton color="primary">
+                                <IconButton color="primary" onClick={handleSend}>
                                     <SendIcon />
                                 </IconButton>
                             )
                         }}
                         placeholder="Say something..."
+                        onChange={(e) => {handleChange(e.target.value)}}
+                        onKeyUp={(e) => {if (e.key === "Enter") {handleSend()}}}
+                        value={inputMessage || ""}
                     />
                 </Box>
-                {/* <div>
-                    {messages.map((m) => <p key={m}>{m}</p>)}
-                </div> */}
             </Container>
         </div>
     )

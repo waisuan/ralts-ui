@@ -2,9 +2,15 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 
+interface Message {
+  userId: string,
+  text: string,
+  createdAt: string
+}
+
 // Define a type for the slice state
 interface ChatState {
-  messages: string[],
+  messages: Message[],
   connected: boolean,
   isConnecting: boolean,
 }
@@ -28,8 +34,13 @@ export const chatSlice = createSlice({
       state.isConnecting = false;
       state.connected = action.payload;
     }),
-    receiveAllMessages: ((state, action) => {
-      state.messages = [action.payload];
+    receiveMessage: ((state, action) => {
+      console.log(action.payload);
+      const payload = JSON.parse(action.payload);
+      state.messages.push(payload);
+    }),
+    sendMessage: ((state, action) => {
+      // state.messages.push(action.payload);
     }),
   },
 })

@@ -5,17 +5,20 @@ import { chatSliceActions } from './chatSlice';
 const WS_URL = 'ws://localhost:8001/ws';
 
 const chatMiddleware: Middleware = store => {
-  let socket = new WebSocket(WS_URL);
+  let socket: WebSocket;
 
   return next => action => {
     if (chatSliceActions.initConnection.match(action)) { 
+      const authToken = action.payload
+      socket = new WebSocket(WS_URL + "?authorization=" + authToken)
+
       socket.onopen = () => {
-        console.log("I'm alive!");
-        chatSliceActions.setConnState(true);
+        store.dispatch(chatSliceActions.setConnState(true));
+        store.dispatch(chatSliceActions.setUserProfile(authToken))
       };
 
       socket.onerror = () => {
-        chatSliceActions.setConnState(false);
+        store.dispatch(chatSliceActions.setConnState(false));
       };
 
       // socket.onclose

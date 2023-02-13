@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
+import jwt_decode from "jwt-decode"
 
 interface Message {
   userId: string,
@@ -8,14 +9,21 @@ interface Message {
   createdAt: string
 }
 
-// Define a type for the slice state
+interface UserProfile {
+  email: string,
+  familyName: string,
+  givenName: string,
+  name: string,
+  picture: string,
+}
+
 interface ChatState {
   messages: Message[],
   connected: boolean,
   isConnecting: boolean,
+  userProfile?: UserProfile,
 }
 
-// Define the initial state using that type
 const initialState: ChatState = {
   messages: [],
   connected: false,
@@ -24,15 +32,24 @@ const initialState: ChatState = {
 
 export const chatSlice = createSlice({
   name: 'chat',
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
-    initConnection: (state => {
+    initConnection: ((state, action) => {
       state.isConnecting = true;
     }),
-    setConnState:  ((state, action) => {
+    setConnState: ((state, action) => {
       state.isConnecting = false;
       state.connected = action.payload;
+    }),
+    disconnect: ((state) => {
+      state.userProfile = undefined;
+      localStorage.removeItem('chat_sess_token');
+    }),
+    setUserProfile: ((state, action) => {
+      const authToken = action.payload;
+      state.userProfile = jwt_decode<UserProfile>(authToken);
+      console.log(state.userProfile);
+      localStorage.setItem('chat_sess_token', authToken);
     }),
     receiveMessage: ((state, action) => {
       console.log(action.payload);
@@ -48,5 +65,7 @@ export const chatSlice = createSlice({
 export const chatSliceActions = chatSlice.actions
 
 export const getMessages = (state: RootState) => state.chat.messages
+
+export const getUserProfile = (state: RootState) => state.chat.userProfile
 
 export default chatSlice.reducer
